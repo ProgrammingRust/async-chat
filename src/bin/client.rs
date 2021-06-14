@@ -1,4 +1,3 @@
-//# send-commands
 use async_std::prelude::*;
 use async_chat::utils::{self, ChatResult};
 use async_std::io;
@@ -12,8 +11,9 @@ async fn send_commands(mut to_server: net::TcpStream) -> ChatResult<()> {
               to close the connection.");
 
     let mut command_lines = io::BufReader::new(io::stdin()).lines();
-    while let Some(command) = command_lines.next().await {
-        let command = command?;
+    while let Some(command_result) = command_lines.next().await {
+        let command = command_result?;
+        // See the GitHub repo for the definition of `parse_command`.
         let request = match parse_command(&command) {
             Some(request) => request,
             None => continue,
@@ -25,9 +25,7 @@ async fn send_commands(mut to_server: net::TcpStream) -> ChatResult<()> {
 
     Ok(())
 }
-//#end
 
-//# client-handle-replies
 use async_chat::FromServer;
 
 async fn handle_replies(from_server: net::TcpStream) -> ChatResult<()> {
@@ -47,9 +45,7 @@ async fn handle_replies(from_server: net::TcpStream) -> ChatResult<()> {
 
     Ok(())
 }
-//# end
 
-//# client-main
 use async_std::task;
 
 fn main() -> ChatResult<()> {
@@ -68,7 +64,6 @@ fn main() -> ChatResult<()> {
         Ok(())
     })
 }
-//# end
 
 use async_chat::FromClient;
 use std::sync::Arc;

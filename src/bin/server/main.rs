@@ -1,8 +1,8 @@
 //! Asynchronous chat server.
+#![warn(rust_2018_idioms)]
+#![allow(elided_lifetimes_in_paths)]
 
-//# server-main
 use async_std::prelude::*;
-use async_std::{net, task};
 use async_chat::utils::ChatResult;
 use std::sync::Arc;
 
@@ -10,24 +10,34 @@ mod connection;
 mod group;
 mod group_table;
 
+use connection::serve;
+
 fn main() -> ChatResult<()> {
     let address = std::env::args().nth(1).expect("Usage: server ADDRESS");
 
-    let groups = Arc::new(group_table::GroupTable::new());
+    let chat_group_table = Arc::new(group_table::GroupTable::new());
 
-    task::block_on(async {
+    async_std::task::block_on(async {
+        // This code was shown in the chapter introduction.
+        use async_std::{net, task};
+
         let listener = net::TcpListener::bind(address).await?;
 
         let mut new_connections = listener.incoming();
-        loop {
-            let socket = new_connections.next().await.unwrap()?;
-            let groups = groups.clone();
+        while let Some(socket_result) = new_connections.next().await {
+            let socket = socket_result?;
+            let groups = chat_group_table.clone();
             task::spawn(async {
-                if let Err(error) = connection::serve(socket, groups).await {
-                    eprintln!("Error: {}", error);
-                }
+                log_error(serve(socket, groups).await);
             });
         }
+
+        Ok(())
     })
 }
-//# end
+
+fn log_error(result: ChatResult<()>) {
+    if let Err(error) = result {
+        eprintln!("Error: {}", error);
+    }
+}

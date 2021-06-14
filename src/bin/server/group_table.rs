@@ -1,4 +1,3 @@
-//# group-table
 use crate::group::Group;
 use std::collections::HashMap;
 use std::sync::{Arc, Mutex};
@@ -25,5 +24,4 @@ impl GroupTable {
             .clone()
     }
 }
-//# end
 

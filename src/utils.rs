@@ -1,13 +1,10 @@
 //! Utilities for both clients and servers.
 
-//# ChatResult
 use std::error::Error;
 
 pub type ChatError = Box<dyn Error + Send + Sync + 'static>;
 pub type ChatResult<T> = Result<T, ChatError>;
-//# end
 
-//# send-as-json
 use async_std::prelude::*;
 use serde::Serialize;
 use std::marker::Unpin;
@@ -22,9 +19,7 @@ where
     outbound.write_all(json.as_bytes()).await?;
     Ok(())
 }
-//# end
 
-//# receive_as_json
 use serde::de::DeserializeOwned;
 
 pub fn receive_as_json<S, P>(inbound: S) -> impl Stream<Item = ChatResult<P>>
@@ -37,27 +32,4 @@ pub fn receive_as_json<S, P>(inbound: S) -> impl Stream<Item = ChatResult<P>>
             let parsed = serde_json::from_str::<P>(&line)?;
             Ok(parsed)
         })
-}
-//# end
-
-#[test]
-fn test_fromclient_json() -> ChatResult<()> {
-    use std::sync::Arc;
-    use super::FromClient;
-
-    //# serialization
-    let from_client = FromClient::Post {
-        group_name: Arc::new("Dogs".to_string()),
-        message: Arc::new("Samoyeds rock!".to_string()),
-    };
-
-    let json = serde_json::to_string(&from_client)?;
-    assert_eq!(json,
-               r#"{"Post":{"group_name":"Dogs","message":"Samoyeds rock!"}}"#);
-
-    assert_eq!(serde_json::from_str::<FromClient>(&json)?,
-               from_client);
-    //# end
-
-    Ok(())
 }

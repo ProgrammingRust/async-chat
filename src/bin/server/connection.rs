@@ -1,6 +1,5 @@
 /// Handle a single client's connection.
 
-//# chat-serve
 use async_chat::{FromClient, FromServer};
 use async_chat::utils::{self, ChatResult};
 use async_std::prelude::*;
@@ -17,8 +16,8 @@ pub async fn serve(socket: TcpStream, groups: Arc<GroupTable>)
 
     let buffered = BufReader::new(socket);
     let mut from_client = utils::receive_as_json(buffered);
-    while let Some(request) = from_client.next().await {
-        let request = request?;
+    while let Some(request_result) = from_client.next().await {
+        let request = request_result?;
 
         let result = match request {
             FromClient::Join { group_name } => {
@@ -48,9 +47,7 @@ pub async fn serve(socket: TcpStream, groups: Arc<GroupTable>)
 
     Ok(())
 }
-//# end
 
-//# chat-Outbound
 use async_std::sync::Mutex;
 
 pub struct Outbound(Mutex<TcpStream>);
@@ -67,4 +64,3 @@ impl Outbound {
         Ok(())
     }
 }
-//# end

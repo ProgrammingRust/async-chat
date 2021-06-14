@@ -1,6 +1,5 @@
 //! A chat group.
 
-//# group-type
 use async_std::task;
 use crate::connection::Outbound;
 use std::sync::Arc;
@@ -33,9 +32,7 @@ impl Group {
         let _ignored = self.sender.send(message);
     }
 }
-//# end
 
-//# handle_subscriber
 use async_chat::FromServer;
 use tokio::sync::broadcast::error::RecvError;
 
@@ -62,4 +59,3 @@ async fn handle_subscriber(group_name: Arc<String>,
         }
     }
 }
-//# end
